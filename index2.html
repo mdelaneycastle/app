@@ -1,61 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AR Mailbox</title>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/webxr/ARButton.js"></script>
-</head>
-<body style="margin: 0; overflow: hidden;">
-  <script>
-    let camera, scene, renderer, controller;
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mailbox AR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
+      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
+      import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/webxr/ARButton.js';
 
-    init();
-    animate();
+      let camera, scene, renderer, controller;
 
-    function init() {
-      scene = new THREE.Scene();
+      init();
+      animate();
 
-      camera = new THREE.PerspectiveCamera(
-        70,
-        window.innerWidth / window.innerHeight,
-        0.01,
-        20
-      );
+      function init() {
+        // Scene setup
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.xr.enabled = true;
-      document.body.appendChild(renderer.domElement);
+        // Renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
-      document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+        // Add light
+        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        scene.add(light);
 
-      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-      scene.add(light);
+        // AR Button
+        document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
 
-      controller = renderer.xr.getController(0);
-      controller.addEventListener('select', onSelect);
-      scene.add(controller);
-    }
+        // Controller for placing object
+        controller = renderer.xr.getController(0);
+        controller.addEventListener('select', onSelect);
+        scene.add(controller);
+      }
 
-    function onSelect() {
-      const loader = new THREE.GLTFLoader();
-      loader.load('MailboxJDE.glb', function (gltf) {
-        const model = gltf.scene;
-        model.scale.set(0.2, 0.2, 0.2); // adjust to fit your real-world scale
-        model.position.set(0, 0, -0.5); // half a meter in front of the camera
-        scene.add(model);
-      });
-    }
+      function onSelect() {
+        const loader = new GLTFLoader();
+        loader.load('MailboxJDE.glb', function (gltf) {
+          const model = gltf.scene;
+          model.scale.set(0.2, 0.2, 0.2); // Adjust size
+          model.position.set(0, 0, -0.5); // Place 0.5m in front
+          scene.add(model);
+        }, undefined, function (error) {
+          console.error('Failed to load model:', error);
+        });
+      }
 
-    function animate() {
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-      });
-    }
-  </script>
-</body>
+      function animate() {
+        renderer.setAnimationLoop(() => {
+          renderer.render(scene, camera);
+        });
+      }
+    </script>
+  </body>
 </html>

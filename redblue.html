@@ -12,9 +12,12 @@
       height: 100%;
     }
     canvas {
-      width: 100vw;
-      height: 100vh;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: block;
+      background: black;
     }
     #shutter {
       position: absolute;
@@ -40,60 +43,67 @@
     const ctx = canvas.getContext('2d');
     const video = document.createElement('video');
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: { exact: 'environment' } },
       audio: false
     }).then(stream => {
       video.srcObject = stream;
       video.play();
-      requestAnimationFrame(drawFrame);
     }).catch(err => {
       alert('Could not access the rear camera.');
       console.error(err);
     });
 
-    function drawFrame() {
-      if (video.readyState >= 2) {
-        const w = canvas.width;
-        const h = canvas.height;
+    video.addEventListener('loadedmetadata', () => {
+      const aspectRatio = video.videoWidth / video.videoHeight;
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
 
-        ctx.drawImage(video, 0, 0, w, h);
-        const frame = ctx.getImageData(0, 0, w, h);
-        const data = frame.data;
+      let drawW = screenW;
+      let drawH = screenW / aspectRatio;
 
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            const index = (y * w + x) * 4;
-            const r = data[index];
-            const g = data[index + 1];
-            const b = data[index + 2];
-
-            if (x < w / 2) {
-              data[index] = r;
-              data[index + 1] = 0;
-              data[index + 2] = 0;
-            } else {
-              data[index] = 0;
-              data[index + 1] = 0;
-              data[index + 2] = b;
-            }
-          }
-        }
-
-        ctx.putImageData(frame, 0, 0);
+      if (drawH > screenH) {
+        drawH = screenH;
+        drawW = screenH * aspectRatio;
       }
 
+      canvas.width = drawW;
+      canvas.height = drawH;
+
+      requestAnimationFrame(drawFrame);
+    });
+
+    function drawFrame() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = frame.data;
+
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const index = (y * canvas.width + x) * 4;
+          const r = data[index];
+          const g = data[index + 1];
+          const b = data[index + 2];
+
+          if (x < canvas.width / 2) {
+            // Left half: RED
+            data[index] = r;
+            data[index + 1] = 0;
+            data[index + 2] = 0;
+          } else {
+            // Right half: BLUE
+            data[index] = 0;
+            data[index + 1] = 0;
+            data[index + 2] = b;
+          }
+        }
+      }
+
+      ctx.putImageData(frame, 0, 0);
       requestAnimationFrame(drawFrame);
     }
 
-    // Capture snapshot
+    // Snapshot capture and share/download
     document.getElementById('shutter').addEventListener('click', () => {
       canvas.toBlob(blob => {
         const file = new File([blob], 'snapshot.png', { type: 'image/png' });

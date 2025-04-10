@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Split Color Camera</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: black;
+    }
+    #camera-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror for selfie view */
+    }
+    .filter {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+    .red {
+      left: 0;
+      background: rgba(255, 0, 0, 0.5);
+    }
+    .blue {
+      right: 0;
+      background: rgba(0, 0, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div id="camera-container">
+    <video id="video" autoplay playsinline></video>
+    <div class="filter red"></div>
+    <div class="filter blue"></div>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Error accessing camera: ", err);
+      });
+  </script>
+</body>
+</html>

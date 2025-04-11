@@ -60,7 +60,17 @@ document.body.appendChild(video); // Attach to DOM for iOS
       });
     }
 
-    startCamera(); // Initial call
+    if (!document.hidden) {
+  requestAnimationFrame(() => {
+    startCamera();
+  });
+} else {
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      startCamera();
+    }
+  }, { once: true });
+}
 
     // Restart camera on screen resize (fold/unfold)
     window.addEventListener('resize', () => {

@@ -54,6 +54,22 @@
       console.error(err);
     });
 
+    document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'environment' } },
+      audio: false
+    }).then(stream => {
+      video.srcObject = stream;
+      video.play();
+    }).catch(err => {
+      console.error('Could not access the rear camera.', err);
+    });
+  }
+});  
+
+
+
     video.addEventListener('loadedmetadata', () => {
       const aspectRatio = video.videoWidth / video.videoHeight;
       const screenW = window.innerWidth;

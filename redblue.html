@@ -43,32 +43,35 @@
     const ctx = canvas.getContext('2d');
     const video = document.createElement('video');
 
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: 'environment' } },
-      audio: false
-    }).then(stream => {
-      video.srcObject = stream;
-      video.play();
-    }).catch(err => {
-      alert('Could not access the rear camera.');
-      console.error(err);
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: 'environment' } },
+        audio: false
+      }).then(stream => {
+        video.srcObject = stream;
+        video.play();
+      }).catch(err => {
+        console.error('Camera error:', err);
+        alert('Could not access the rear camera.');
+      });
+    }
+
+    startCamera(); // Initial call
+
+    // Restart camera on screen resize (fold/unfold)
+    window.addEventListener('resize', () => {
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+      startCamera();
     });
 
+    // Also restart if tab becomes visible again
     document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: 'environment' } },
-      audio: false
-    }).then(stream => {
-      video.srcObject = stream;
-      video.play();
-    }).catch(err => {
-      console.error('Could not access the rear camera.', err);
+      if (!document.hidden) {
+        startCamera();
+      }
     });
-  }
-});  
-
-
 
     video.addEventListener('loadedmetadata', () => {
       const aspectRatio = video.videoWidth / video.videoHeight;
@@ -102,12 +105,10 @@
           const b = data[index + 2];
 
           if (x < canvas.width / 2) {
-            // Left half: RED
             data[index] = r;
             data[index + 1] = 0;
             data[index + 2] = 0;
           } else {
-            // Right half: BLUE
             data[index] = 0;
             data[index + 1] = 0;
             data[index + 2] = b;
@@ -119,7 +120,6 @@
       requestAnimationFrame(drawFrame);
     }
 
-    // Snapshot capture and share/download
     document.getElementById('shutter').addEventListener('click', () => {
       canvas.toBlob(blob => {
         const file = new File([blob], 'snapshot.png', { type: 'image/png' });

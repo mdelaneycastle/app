@@ -2,16 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Mailbox AR</title>
+    <title>Mailbox AR Test</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
         margin: 0;
         overflow: hidden;
-        font-family: sans-serif;
-      }
-      canvas {
-        display: block;
       }
     </style>
   </head>
@@ -21,31 +17,29 @@
       import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
       import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/webxr/ARButton.js';
 
-      let camera, scene, renderer, controller;
+      let scene, camera, renderer, controller;
 
       init();
       animate();
 
       function init() {
-        // Scene setup
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
-        // Renderer
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
 
+        // Simpler ARButton for broader compatibility
+        document.body.appendChild(ARButton.createButton(renderer));
+
         // Add light
         const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
         scene.add(light);
 
-        // AR Button
-        document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
-
-        // Controller for placing object
+        // Tap to place model
         controller = renderer.xr.getController(0);
         controller.addEventListener('select', onSelect);
         scene.add(controller);
@@ -55,11 +49,11 @@
         const loader = new GLTFLoader();
         loader.load('MailboxJDE.glb', function (gltf) {
           const model = gltf.scene;
-          model.scale.set(0.2, 0.2, 0.2); // Adjust size
-          model.position.set(0, 0, -0.5); // Place 0.5m in front
+          model.scale.set(0.2, 0.2, 0.2);
+          model.position.set(0, 0, -0.5); // Place half a meter forward
           scene.add(model);
         }, undefined, function (error) {
-          console.error('Failed to load model:', error);
+          console.error('Model failed to load:', error);
         });
       }
 

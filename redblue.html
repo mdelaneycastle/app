@@ -42,6 +42,10 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const video = document.createElement('video');
+video.setAttribute('playsinline', true);
+video.setAttribute('muted', true);
+video.style.display = 'none'; // Keep it in DOM but hidden
+document.body.appendChild(video); // Attach to DOM for iOS
 
     function startCamera() {
       navigator.mediaDevices.getUserMedia({

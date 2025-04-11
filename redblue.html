@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Red/Blue Camera Filter</title>
+  <title>Red/Blue Drag Camera Filter</title>
   <style>
     html, body {
       margin: 0;
@@ -12,15 +12,15 @@
       height: 100%;
     }
     canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: block;
-  object-fit: cover;
-  background: black;
-}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      object-fit: cover;
+      background: black;
+    }
     #shutter {
       position: absolute;
       bottom: 30px;
@@ -43,11 +43,14 @@
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+
     const video = document.createElement('video');
-video.setAttribute('playsinline', true);
-video.setAttribute('muted', true);
-video.style.display = 'none'; // Keep it in DOM but hidden
-document.body.appendChild(video); // Attach to DOM for iOS
+    video.setAttribute('playsinline', true);
+    video.setAttribute('muted', true);
+    video.style.display = 'none';
+    document.body.appendChild(video);
+
+    let splitPosition = null;
 
     function startCamera() {
       navigator.mediaDevices.getUserMedia({
@@ -62,19 +65,29 @@ document.body.appendChild(video); // Attach to DOM for iOS
       });
     }
 
+    // Kick off camera (deferred if not visible)
     if (!document.hidden) {
-  requestAnimationFrame(() => {
-    startCamera();
-  });
-} else {
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      startCamera();
+      requestAnimationFrame(() => {
+        startCamera();
+      });
+    } else {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          startCamera();
+        }
+      }, { once: true });
     }
-  }, { once: true });
-}
 
-    // Restart camera on screen resize (fold/unfold)
+    // Restart camera if browser tab returns or screen folds
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        if (video.srcObject) {
+          video.srcObject.getTracks().forEach(track => track.stop());
+        }
+        startCamera();
+      }
+    });
+
     window.addEventListener('resize', () => {
       if (video.srcObject) {
         video.srcObject.getTracks().forEach(track => track.stop());
@@ -82,29 +95,10 @@ document.body.appendChild(video); // Attach to DOM for iOS
       startCamera();
     });
 
-    // Also restart if tab becomes visible again
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        startCamera();
-      }
-    });
-
     video.addEventListener('loadedmetadata', () => {
-      const aspectRatio = video.videoWidth / video.videoHeight;
-      const screenW = window.innerWidth;
-      const screenH = window.innerHeight;
-
-      let drawW = screenW;
-      let drawH = screenW / aspectRatio;
-
-      if (drawH > screenH) {
-        drawH = screenH;
-        drawW = screenH * aspectRatio;
-      }
-
-      canvas.width = drawW;
-      canvas.height = drawH;
-
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      splitPosition = canvas.width / 2;
       requestAnimationFrame(drawFrame);
     });
 
@@ -120,7 +114,7 @@ document.body.appendChild(video); // Attach to DOM for iOS
           const g = data[index + 1];
           const b = data[index + 2];
 
-          if (x < canvas.width / 2) {
+          if (x < splitPosition) {
             data[index] = r;
             data[index + 1] = 0;
             data[index + 2] = 0;
@@ -136,6 +130,26 @@ document.body.appendChild(video); // Attach to DOM for iOS
       requestAnimationFrame(drawFrame);
     }
 
+    // Drag to adjust split
+    function updateSplit(e) {
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      splitPosition = Math.max(0, Math.min(canvas.width, x * (canvas.width / window.innerWidth)));
+    }
+
+    canvas.addEventListener('touchstart', updateSplit);
+    canvas.addEventListener('touchmove', updateSplit);
+    canvas.addEventListener('mousedown', (e) => {
+      updateSplit(e);
+      const move = ev => updateSplit(ev);
+      const up = () => {
+        window.removeEventListener('mousemove', move);
+        window.removeEventListener('mouseup', up);
+      };
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
+    });
+
+    // Snapshot
     document.getElementById('shutter').addEventListener('click', () => {
       canvas.toBlob(blob => {
         const file = new File([blob], 'snapshot.png', { type: 'image/png' });

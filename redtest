@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red/Blue Drag Camera Filter</title>
+  <style>
+    html, body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      object-fit: cover;
+      background: black;
+    }
+    #shutter {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 70px;
+      border: 4px solid white;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="shutter"></div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const video = document.createElement('video');
+    video.setAttribute('playsinline', true);
+    video.setAttribute('muted', true);
+    video.style.display = 'none';
+    document.body.appendChild(video);
+
+    let splitPosition = null;
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: 'environment' } },
+        audio: false
+      }).then(stream => {
+        video.srcObject = stream;
+        video.play();
+      }).catch(err => {
+        console.error('Camera error:', err);
+        alert('Could not access the rear camera.');
+      });
+    }
+
+    // Kick off camera (deferred if not visible)
+    if (!document.hidden) {
+      requestAnimationFrame(() => {
+        startCamera();
+      });
+    } else {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          startCamera();
+        }
+      }, { once: true });
+    }
+
+    // Restart camera if browser tab returns or screen folds
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        if (video.srcObject) {
+          video.srcObject.getTracks().forEach(track => track.stop());
+        }
+        startCamera();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+      startCamera();
+    });
+
+    video.addEventListener('loadedmetadata', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      splitPosition = canvas.width / 2;
+      requestAnimationFrame(drawFrame);
+    });
+
+    function drawFrame() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = frame.data;
+
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const index = (y * canvas.width + x) * 4;
+          const r = data[index];
+          const g = data[index + 1];
+          const b = data[index + 2];
+
+          if (x < splitPosition) {
+            data[index] = r;
+            data[index + 1] = 0;
+            data[index + 2] = 0;
+          } else {
+            data[index] = 0;
+            data[index + 1] = 0;
+            data[index + 2] = b;
+          }
+        }
+      }
+
+      ctx.putImageData(frame, 0, 0);
+      requestAnimationFrame(drawFrame);
+    }
+
+    // Drag to adjust split
+    function updateSplit(e) {
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      splitPosition = Math.max(0, Math.min(canvas.width, x * (canvas.width / window.innerWidth)));
+    }
+
+    canvas.addEventListener('touchstart', updateSplit);
+    canvas.addEventListener('touchmove', updateSplit);
+    canvas.addEventListener('mousedown', (e) => {
+      updateSplit(e);
+      const move = ev => updateSplit(ev);
+      const up = () => {
+        window.removeEventListener('mousemove', move);
+        window.removeEventListener('mouseup', up);
+      };
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
+    });
+
+    // Snapshot
+    document.getElementById('shutter').addEventListener('click', () => {
+      canvas.toBlob(blob => {
+        const file = new File([blob], 'snapshot.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: 'Snapshot',
+            text: 'Captured with red/blue filter.'
+          });
+        } else {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'snapshot.png';
+          link.click();
+        }
+      }, 'image/png');
+    });
+  </script>
+</body>
+</html>

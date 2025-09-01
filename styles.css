@@ -1,0 +1,397 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.screen {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Setup Screen */
+#setup-screen h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #444;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: block;
+    margin: 20px auto 0;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Game Screen */
+.game-header {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.game-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    height: 600px;
+}
+
+.streetview-container, .map-container {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+#streetview, #guess-map {
+    width: 100%;
+    height: 100%;
+}
+
+.map-container {
+    display: flex;
+    flex-direction: column;
+}
+
+#guess-map {
+    flex: 1;
+}
+
+.game-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+}
+
+.game-buttons button {
+    flex: 1;
+    margin: 0;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    background: #5a6268;
+}
+
+.btn-secondary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Hint Panel */
+.hint-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    z-index: 1000;
+    max-width: 400px;
+    width: 90%;
+}
+
+.hint-panel h3 {
+    margin-bottom: 20px;
+    color: #444;
+    text-align: center;
+}
+
+.hint-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.hint-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* Result Screen */
+#result-details {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 18px;
+}
+
+#result-details p {
+    margin: 10px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.result-maps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.result-map-container {
+    text-align: center;
+}
+
+.result-map-container h3 {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+#guess-result-map, #actual-result-map {
+    height: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Final Screen */
+#final-screen {
+    text-align: center;
+}
+
+#final-screen h2 {
+    color: #444;
+    margin-bottom: 30px;
+}
+
+#final-score h3 {
+    font-size: 2.5rem;
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+#final-score p {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .game-content {
+        grid-template-columns: 1fr;
+        height: auto;
+        gap: 15px;
+    }
+
+    .streetview-container {
+        height: 50vh;
+        min-height: 300px;
+    }
+
+    .map-container {
+        height: 40vh;
+        min-height: 250px;
+    }
+
+    .game-buttons {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .game-buttons button {
+        width: 100%;
+        padding: 18px;
+        font-size: 16px;
+        min-height: 50px;
+    }
+
+    .result-maps {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    #guess-result-map, #actual-result-map {
+        height: 250px;
+    }
+
+    .game-info {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .hint-panel {
+        width: 95%;
+        max-width: none;
+        padding: 20px;
+        top: 45%;
+    }
+
+    .hint-item {
+        font-size: 14px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .screen {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .streetview-container {
+        height: 45vh;
+        min-height: 280px;
+    }
+
+    .map-container {
+        height: 35vh;
+        min-height: 220px;
+    }
+
+    .game-buttons button {
+        padding: 20px;
+        font-size: 18px;
+        min-height: 55px;
+    }
+
+    .hint-panel {
+        padding: 15px;
+        top: 40%;
+    }
+
+    #final-score h3 {
+        font-size: 2rem;
+    }
+
+    #final-score p {
+        font-size: 1.2rem;
+    }
+
+    .game-info {
+        font-size: 16px;
+    }
+}
+
+/* Touch and mobile specific optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn-primary:hover, .btn-secondary:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .btn-primary:active, .btn-secondary:active {
+        transform: scale(0.98);
+    }
+}

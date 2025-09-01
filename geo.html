@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGuesser Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>GeoGuesser</h1>
+        
+        <div id="setup-screen" class="screen">
+            <h2>Game Setup</h2>
+            <div class="input-group">
+                <label for="location-input">Location:</label>
+                <input type="text" id="location-input" placeholder="Enter a city or area (e.g., New York, Paris)">
+            </div>
+            <div class="input-group">
+                <label for="radius-input">Radius (miles):</label>
+                <input type="number" id="radius-input" min="1" max="100" value="10" placeholder="10">
+            </div>
+            <button id="start-game" class="btn-primary">Start Game</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-header">
+                <div class="game-info">
+                    <span>Round: <span id="current-round">1</span>/10</span>
+                    <span>Score: <span id="current-score">0</span></span>
+                </div>
+            </div>
+            
+            <div class="game-content">
+                <div class="streetview-container">
+                    <div id="streetview"></div>
+                </div>
+                
+                <div class="map-container">
+                    <div id="guess-map"></div>
+                    <div class="game-buttons">
+                        <button id="get-hint" class="btn-secondary">Get Hint</button>
+                        <button id="submit-guess" class="btn-primary" disabled>Submit Guess</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="hint-panel" class="hint-panel hidden">
+                <h3>Nearby Places</h3>
+                <div id="hint-content">
+                    <div class="hint-loading">Looking for nearby places...</div>
+                </div>
+                <button id="close-hint" class="btn-secondary">Close Hint</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="screen hidden">
+            <h2>Round Result</h2>
+            <div id="result-details"></div>
+            <div class="result-maps">
+                <div class="result-map-container">
+                    <h3>Your Guess</h3>
+                    <div id="guess-result-map"></div>
+                </div>
+                <div class="result-map-container">
+                    <h3>Actual Location</h3>
+                    <div id="actual-result-map"></div>
+                </div>
+            </div>
+            <button id="next-round" class="btn-primary">Next Round</button>
+        </div>
+
+        <div id="final-screen" class="screen hidden">
+            <h2>Game Complete!</h2>
+            <div id="final-score"></div>
+            <button id="play-again" class="btn-primary">Play Again</button>
+        </div>
+    </div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3EgrMZPA95rxuy9xh-TxkxFhTn4sIH0U"></script>
+    <script src="script.js"></script>
+</body>
+</html>

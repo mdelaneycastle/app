@@ -110,11 +110,14 @@ class GeoGuesser {
             scrollwheel: true,
             disableDoubleClickZoom: false
         };
-
+    
         this.streetView = new google.maps.StreetViewPanorama(
             document.getElementById('streetview'),
             streetViewOptions
         );
+    
+        // 👇 reattach the label hider every round
+        hideStreetViewLabels();
     }
 
     initializeGuessMap() {
@@ -373,12 +376,9 @@ window.addEventListener('load', () => {
 // Auto-hide Street View road labels (road names, addresses, etc.)
 function hideStreetViewLabels() {
     const streetview = document.getElementById("streetview");
-
     if (!streetview) return;
 
-    // MutationObserver watches for new DOM nodes inside Street View
     const observer = new MutationObserver(() => {
-        // Query any label/address elements and hide them
         streetview.querySelectorAll(
             ".gm-iv-address, .gm-iv-short-address, .gm-iv-labels, .gm-iv-marker, .gm-iv-roadsign"
         ).forEach(el => {

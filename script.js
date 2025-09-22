@@ -369,3 +369,28 @@ class GeoGuesser {
 window.addEventListener('load', () => {
     new GeoGuesser();
 });
+
+// Auto-hide Street View road labels (road names, addresses, etc.)
+function hideStreetViewLabels() {
+    const streetview = document.getElementById("streetview");
+
+    if (!streetview) return;
+
+    // MutationObserver watches for new DOM nodes inside Street View
+    const observer = new MutationObserver(() => {
+        // Query any label/address elements and hide them
+        streetview.querySelectorAll(
+            ".gm-iv-address, .gm-iv-short-address, .gm-iv-labels, .gm-iv-marker, .gm-iv-roadsign"
+        ).forEach(el => {
+            el.style.display = "none";
+        });
+    });
+
+    observer.observe(streetview, {
+        childList: true,
+        subtree: true
+    });
+}
+
+// Run once page is ready
+window.addEventListener("load", hideStreetViewLabels);

@@ -34,11 +34,26 @@
       cursor: pointer;
       z-index: 10;
     }
+    #modeToggle {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      padding: 6px 10px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 10;
+      font-family: system-ui, sans-serif;
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
   <div id="shutter"></div>
+  <button id="modeToggle">Original</button>
 
   <script>
     const canvas = document.getElementById('canvas');
@@ -51,6 +66,7 @@
     document.body.appendChild(video);
 
     let splitPosition = null;
+    let useOriginalColors = false;
 
     function startCamera() {
       navigator.mediaDevices.getUserMedia({
@@ -115,13 +131,27 @@
           const b = data[index + 2];
 
           if (x < splitPosition) {
-            data[index] = r;
-            data[index + 1] = 0;
-            data[index + 2] = 0;
+            if (useOriginalColors) {
+              const intensity = r / 255;
+              data[index] = Math.round(235 * intensity);
+              data[index + 1] = Math.round(48 * intensity);
+              data[index + 2] = Math.round(65 * intensity);
+            } else {
+              data[index] = r;
+              data[index + 1] = 0;
+              data[index + 2] = 0;
+            }
           } else {
-            data[index] = 0;
-            data[index + 1] = 0;
-            data[index + 2] = b;
+            if (useOriginalColors) {
+              const intensity = b / 255;
+              data[index] = Math.round(10 * intensity);
+              data[index + 1] = Math.round(165 * intensity);
+              data[index + 2] = Math.round(193 * intensity);
+            } else {
+              data[index] = 0;
+              data[index + 1] = 0;
+              data[index + 2] = b;
+            }
           }
         }
       }
@@ -147,6 +177,12 @@
       };
       window.addEventListener('mousemove', move);
       window.addEventListener('mouseup', up);
+    });
+
+    // Mode toggle
+    document.getElementById('modeToggle').addEventListener('click', () => {
+      useOriginalColors = !useOriginalColors;
+      document.getElementById('modeToggle').textContent = useOriginalColors ? 'Print' : 'Original';
     });
 
     // Snapshot

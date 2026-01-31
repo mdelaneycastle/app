@@ -48,12 +48,31 @@
       z-index: 10;
       font-family: system-ui, sans-serif;
     }
+    #uploadBtn {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      padding: 12px 20px;
+      font-size: 22px;
+      color: rgba(255, 255, 255, 0.4);
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 10;
+      font-family: system-ui, sans-serif;
+    }
+    #fileInput {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
   <div id="shutter"></div>
   <button id="modeToggle">Original</button>
+  <button id="uploadBtn">Upload</button>
+  <input type="file" id="fileInput" accept="image/*">
 
   <script>
     const canvas = document.getElementById('canvas');
@@ -67,6 +86,8 @@
 
     let splitPosition = null;
     let useOriginalColors = false;
+    let uploadedImage = null;
+    let isImageMode = false;
 
     function startCamera() {
       navigator.mediaDevices.getUserMedia({
@@ -119,7 +140,12 @@
     });
 
     function drawFrame() {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const source = isImageMode ? uploadedImage : video;
+      if (!source || (isImageMode && !uploadedImage)) {
+        requestAnimationFrame(drawFrame);
+        return;
+      }
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
       const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = frame.data;
 
@@ -183,6 +209,41 @@
     document.getElementById('modeToggle').addEventListener('click', () => {
       useOriginalColors = !useOriginalColors;
       document.getElementById('modeToggle').textContent = useOriginalColors ? 'Print' : 'Original';
+    });
+
+    // Upload image
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadBtn.addEventListener('click', () => {
+      if (isImageMode) {
+        // Switch back to camera
+        isImageMode = false;
+        uploadedImage = null;
+        uploadBtn.textContent = 'Upload';
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        splitPosition = canvas.width / 2;
+      } else {
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const img = new Image();
+        img.onload = () => {
+          uploadedImage = img;
+          isImageMode = true;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          splitPosition = canvas.width / 2;
+          uploadBtn.textContent = 'Camera';
+        };
+        img.src = URL.createObjectURL(file);
+      }
+      fileInput.value = '';
     });
 
     // Snapshot

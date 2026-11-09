@@ -70,7 +70,7 @@
 <body>
   <canvas id="canvas"></canvas>
   <div id="shutter"></div>
-  <button id="modeToggle">Original</button>
+  <button id="modeToggle">Print</button>
   <button id="uploadBtn">Upload</button>
   <input type="file" id="fileInput" accept="image/*">
 
@@ -85,7 +85,7 @@
     document.body.appendChild(video);
 
     let splitPosition = null;
-    let useOriginalColors = false;
+    let useOriginalColors = true;
     let uploadedImage = null;
     let isImageMode = false;
 
